@@ -1,8 +1,21 @@
 import os
 import shutil
+import datetime
 
 # Folder to organize
 folder = "test_folder"
+
+log_file = "organizer_log.txt"
+
+def write_log(message):
+    timestamp = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+    log_entry = f" {timestamp} {message}\n"
+
+    with open(log_file, "a") as f:
+        f.write(log_entry)
+
+    print(log_entry.strip())   
+    
 
 # Category rules
 def get_category(extension):
@@ -16,6 +29,9 @@ def get_category(extension):
         return "Videos"
     else:
         return "Others"
+
+write_log("---Organizer Started---")
+
 
 # Get all files
 files = os.listdir(folder)
@@ -40,6 +56,7 @@ for file in files:
 
     # Move the file
     shutil.move(file_path, os.path.join(category_path, file))
-    print(f"Moved {file} → {category}/")
+    write_log(f"Moved {file} → {category}/")
 
-print("\n Done! All files organized.")
+write_log("---Oraganizer Finished---")
+print("\n Done! Check organizer_log.txt for details.")
