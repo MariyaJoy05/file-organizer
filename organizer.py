@@ -5,19 +5,16 @@ import datetime
 # Folder to organize
 folder = "test_folder"
 
+# Log file
 log_file = "organizer_log.txt"
 
 def write_log(message):
     timestamp = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
-    log_entry = f" {timestamp} {message}\n"
-
+    log_entry = f"{timestamp} {message}\n"
     with open(log_file, "a") as f:
         f.write(log_entry)
+    print(log_entry.strip())
 
-    print(log_entry.strip())   
-    
-
-# Category rules
 def get_category(extension):
     if extension in [".jpg", ".jpeg", ".png", ".gif"]:
         return "Images"
@@ -30,33 +27,45 @@ def get_category(extension):
     else:
         return "Others"
 
-write_log("---Organizer Started---")
+def organize_folder(folder):
+    # Check if folder exists
+    if not os.path.exists(folder):
+        print(f"❌ Error: Folder '{folder}' not found!")
+        return
 
+    files = os.listdir(folder)
 
-# Get all files
-files = os.listdir(folder)
+    # Check if folder is empty
+    if not files:
+        print("⚠️ Folder is empty - nothing to organize!")
+        return
 
-# Loop through each file
-for file in files:
-    # Build full path of the file
-    file_path = os.path.join(folder, file)
+    write_log("--- Organizer Started ---")
+    moved = 0
 
-    # Skip if it's a folder not a file
-    if os.path.isdir(file_path):
-        continue
+    for file in files:
+        file_path = os.path.join(folder, file)
 
-    # Get extension and category
-    name, extension = os.path.splitext(file)
-    category = get_category(extension)
+        if os.path.isdir(file_path):
+            continue
 
-    # Create category folder if it doesn't exist
-    category_path = os.path.join(folder, category)
-    if not os.path.exists(category_path):
-        os.makedirs(category_path)
+        try:
+            name, extension = os.path.splitext(file)
+            category = get_category(extension)
+            category_path = os.path.join(folder, category)
 
-    # Move the file
-    shutil.move(file_path, os.path.join(category_path, file))
-    write_log(f"Moved {file} → {category}/")
+            if not os.path.exists(category_path):
+                os.makedirs(category_path)
 
-write_log("---Oraganizer Finished---")
-print("\n Done! Check organizer_log.txt for details.")
+            shutil.move(file_path, os.path.join(category_path, file))
+            write_log(f"Moved {file} → {category}/")
+            moved += 1
+
+        except Exception as e:
+            write_log(f"❌ Could not move {file} - Error: {e}")
+
+    write_log(f"--- Organizer Finished | {moved} files organized ---")
+    print(f"\n✅ Done! {moved} files organized.")
+
+# Run the organizer
+organize_folder(folder)
